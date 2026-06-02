@@ -1,0 +1,56 @@
+# Marveen — fully containerized.
+#
+#   1. cp .env.docker.example .env.docker   &&  edit it (Claude token + bot token)
+#   2. docker compose build
+#   3. docker compose up -d
+#   4. docker compose exec ollama ollama pull nomic-embed-text   # optional, for semantic memory
+#   5. Open the dashboard + DM your bot to pair (see DOCKER.md)
+#
+# This runs Marveen as a single multi-process "pet" container (tmux server +
+# dashboard + channels bridge + N claude agent sessions), plus an optional
+# Ollama sidecar for vector memory.
+
+services:
+  marveen:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: marveen:local
+    container_name: marveen
+    restart: unless-stopped
+    env_file:
+      - .env.docker
+    environment:
+      # Container-fixed overrides (take precedence over .env.docker)
+      MARVEEN_ENV: linux-server
+      WEB_HOST: 0.0.0.0
+      WEB_PORT: "3420"
+      TERM: xterm-256color
+      # Point semantic memory at the sidecar. Comment out to disable Ollama
+      # entirely (memory falls back to FTS5 keyword search).
+      OLLAMA_URL: http://ollama:11434
+    ports:
+      - "3420:3420"          # dashboard (WEB_HOST=0.0.0.0 → set DASHBOARD_TOKEN!)
+    volumes:
+      - marveen-store:/app/store              # sqlite DB, vault key, dashboard token, logs
+      - marveen-agents:/app/agents            # per-agent scaffolds
+      - marveen-claude:/home/marveen/.claude  # plugins, channel pairing, sessions
+    depends_on:
+      - ollama
+    stop_grace_period: 30s
+
+  # Optional. Provides nomic-embed-text for hybrid (FTS5 + vector) memory.
+  # Remove this service (and the OLLAMA_URL env above) to run keyword-only.
+  ollama:
+    image: ollama/ollama:latest
+    container_name: marveen-ollama
+    restart: unless-stopped
+    volumes:
+      - marveen-ollama:/root/.ollama
+    # No published port: only the marveen service reaches it over the network.
+
+volumes:
+  marveen-store:
+  marveen-agents:
+  marveen-claude:
+  marveen-ollama:

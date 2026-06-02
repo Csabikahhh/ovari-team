@@ -1,0 +1,39 @@
+# VCS
+.git
+.gitignore
+.gitattributes
+
+# Installed/built artifacts — reinstalled & rebuilt inside the image
+node_modules
+dist
+
+# Runtime state & secrets — must NEVER be baked into the image (use volumes)
+.env
+.env.*
+store
+agents
+workspace
+reports
+backups
+.config
+*.log
+*.pid
+*.db
+*.db-shm
+*.db-wal
+
+# Harness/project Claude config — let the container create a fresh one
+.claude
+
+# Generated-from-template personal config (entrypoint regenerates it)
+CLAUDE.md
+SOUL.md
+
+# Large/irrelevant-to-runtime files
+banner.png
+REBUILD_PROMPT*.md
+
+# Host-OS / editor cruft
+.DS_Store
+.vscode
+.idea

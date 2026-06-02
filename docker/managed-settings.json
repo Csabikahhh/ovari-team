@@ -1,0 +1,8 @@
+{
+  "channelsEnabled": true,
+  "allowedChannelPlugins": [
+    { "plugin": "telegram", "marketplace": "claude-plugins-official" },
+    { "plugin": "slack-channel", "marketplace": "marveen-marketplace" },
+    { "plugin": "discord", "marketplace": "claude-plugins-official" }
+  ]
+}
